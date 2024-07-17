@@ -12,6 +12,7 @@ import {
     User
 } from "../models/users.js";
 import { body, validationResult } from 'express-validator';
+import { Role } from '../models/role.js';
 
 
 export class AuthController {
@@ -64,8 +65,11 @@ export class AuthController {
                 userId: newUser.id
             });
 
+            const user = await User.findByPk(newUser.id, { include: Role });
+
             return sendResponse(res, 201, false, 'Registrado', null, {
-                token: token
+                token: token,
+                user: user
             });
         } catch (error) {
             console.error('Error al registrar usuario:', error);
@@ -95,10 +99,11 @@ export class AuthController {
             } = req.body;
 
             // Verificar si el usuario existe
-            const user = await User.findOne({ where: { email } });
+            const user = await User.findOne({ where: { email }, include: Role });
             if (!user) {
                 return sendResponse(res, 401, true, 'Credenciales no válidas');
             }
+
 
             // Verificar la contraseña
             const passwordMatch = await bcrypt.compare(password, user.password);
@@ -112,7 +117,8 @@ export class AuthController {
             });
 
             return sendResponse(res, 201, false, 'Acceso exitoso', null, {
-                token: token
+                token: token,
+                user: user
             });
         } catch (error) {
             console.error('Error al iniciar sesión:', error);

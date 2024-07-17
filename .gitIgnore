@@ -41,6 +41,6 @@ yarn-error.*
 /.nyc_output
 
 # local env files
-.env
+# .env
 .env*.local
 .vercel

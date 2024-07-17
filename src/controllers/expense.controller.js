@@ -33,7 +33,22 @@ export class ExpenseController {
     // GET expenses/
     static async getAllExpenses(req, res) {
         try {
-            const expenses = await Expense.findAll({ include: Category });
+
+            const { category, sortBy, order } = req.query;
+            let where = {};
+            let orderBy = [];
+
+            // Check if categoryId is provided (from path or query)
+            if (req.params.categoryId || category) {
+                where.categoryId = req.params.categoryId || category;
+            }
+
+            if (sortBy && order) {
+                orderBy.push([sortBy, order]);
+            }
+
+            const expenses = await Expense.findAll({ where, order: orderBy, include: Category });
+
             return sendResponse(res, 200, false, 'Gastos obtenidos exitosamente.', null, { expenses });
         } catch (error) {
             console.error('Error al obtener gastos:', error);

@@ -42,7 +42,16 @@ export class UserController {
     // GET users/
     static async getAllUsers(req, res) {
         try {
-            const users = await User.findAll({ include: Role });
+
+            const { category } = req.query;
+            let where = {};
+
+            // Check if roleId is provided (from path or query)
+            if (req.params.roleId || category) {
+                where.roleId = req.params.roleId || category;
+            }
+
+            const users = await User.findAll({ where, include: Role });
             return sendResponse(res, 200, false, 'Usuarios obtenidos exitosamente.', null, { users });
         } catch (error) {
             console.error('Error al obtener usuarios:', error);
@@ -84,7 +93,7 @@ export class UserController {
 
 
             // Actualizar el usuario
-            if (email) {
+            if (email && email !== user.email) {
                 const existingUser = await User.findOne({ where: { email } });
                 if (existingUser) {
                     return sendResponse(res, 400, true, 'Correo electrónico ya está en uso.');
